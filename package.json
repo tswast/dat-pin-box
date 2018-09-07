@@ -1,0 +1,24 @@
+{
+  "name": "dat-pin-box",
+  "version": "0.1.0",
+  "description": "Pin Dat archives by watching a Dat archive.",
+  "main": "index.js",
+  "dependencies": {
+    "dat-node": "^3.5.11",
+    "parse-dat-url": "^3.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tswast/dat-pin-box.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/tswast/dat-pin-box/issues"
+  },
+  "homepage": "https://github.com/tswast/dat-pin-box#readme"
+}
