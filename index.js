@@ -18,15 +18,15 @@ var mirror = require('mirror-folder')
 var Dat = require('dat-node')
 var parse = require('parse-dat-url')
 
-// var key = process.argv[2]
-// if (!key) {
-//   console.error('Run with: node examples/download.js <key>')
-//   process.exit(1)
-// }
+var rootDir = process.argv[2]
+if (!rootDir) {
+  console.error('Run with: node index.js path/to/pins/root/')
+  process.exit(1)
+}
+rootDir = path.resolve(rootDir)
+pinsRepo = path.resolve(rootDir, 'pins')
 
-var rootDir = '/Users/tswast/src/dat-pin-box/pins/'
-
-Dat(rootDir + 'pins/', {key: process.env.DAT_PIN_ARCHIVE}, function (err, dat) {
+Dat(pinsRepo, {key: process.env.DAT_PIN_ARCHIVE}, function (err, dat) {
   if (err) throw err
 
   dat.joinNetwork(function (err) {
@@ -42,12 +42,12 @@ Dat(rootDir + 'pins/', {key: process.env.DAT_PIN_ARCHIVE}, function (err, dat) {
   console.log('Downloading: pin archive')
 })
 
-fs.readFile(rootDir + 'pins/pins.json', 'utf8', function (err, data) {
+fs.readFile(path.resolve(pinsRepo, 'pins.json'), 'utf8', function (err, data) {
   if (err) throw err;
   var pins = JSON.parse(data);
   pins['archives'].forEach(function (archive) {
     var url = parse(archive['url'])
-    Dat(rootDir + archive['directory'] + '/', {key: url['host']}, function (err, dat) {
+    Dat(path.resolve(rootDir, archive['directory']), {key: url['host']}, function (err, dat) {
       if (err) throw err
 
       dat.joinNetwork(function (err) {
