@@ -12,52 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var fs = require('fs')
-var path = require('path')
-var mirror = require('mirror-folder')
-var Dat = require('dat-node')
-var parse = require('parse-dat-url')
+async function main() {
+  const url = new URL(import.meta.url)
+  const pinUrl = url.hash.substring(1)
 
-var rootDir = process.argv[2]
-if (!rootDir) {
-  console.error('Run with: node index.js path/to/pins/root/')
-  process.exit(1)
+  const pinsRepo = await DatArchive.load(pinUrl)
+  await pinsRepo.download('/')
+  const buf = await pinsRepo.readFile('/pins.json')
+  const pins = JSON.parse(buf)['archives']
+
+  for (let pinned of pins) {
+    const pinnedUrl = pinned.url
+    await seed(pinnedUrl)
+  }
 }
-rootDir = path.resolve(rootDir)
-pinsRepo = path.resolve(rootDir, 'pins')
 
-Dat(pinsRepo, {key: process.env.DAT_PIN_ARCHIVE}, function (err, dat) {
-  if (err) throw err
+// TODO: refactor follow-seeder so that we can reuse the "seed these paths on
+//       this dat repo" logic here See: https://github.com/RangerMauve/follow-seeder
+async function seed(url) {
+  console.log(`Seeding ${url}`);
+  try {
+    const pinnedArchive = await DatArchive.load(url)
+    try {
+      await pinnedArchive.download('/');
 
-  dat.joinNetwork(function (err) {
-    if (err) throw err
-
-    // After the first round of network checks, the callback is called
-    // If no one is online, you can exit and let the user know.
-    if (!dat.network.connected || !dat.network.connecting) {
-      console.error('No users currently online for pin key.')
-      // process.exit(1)
+    } catch(e) {
+      console.error(`Unable to seed ${url}: ${e}`);
     }
-  })
-  console.log('Downloading: pin archive')
-})
+  } catch (e) {
+    console.error(e);
+  }
+}
 
-fs.readFile(path.resolve(pinsRepo, 'pins.json'), 'utf8', function (err, data) {
-  if (err) throw err;
-  var pins = JSON.parse(data);
-  pins['archives'].forEach(function (archive) {
-    var url = parse(archive['url'])
-    Dat(path.resolve(rootDir, archive['directory']), {key: url['host']}, function (err, dat) {
-      if (err) throw err
-
-      dat.joinNetwork(function (err) {
-        if (err) throw err
-        if (!dat.network.connected || !dat.network.connecting) {
-          console.error('No users currently online for ' + archive['directory'] + ' key.')
-          // process.exit(1)
-        }
-      })
-      console.log(`Downloading: ${archive['directory']}\n`)
-    })
-  })
-});
+main()
+  .then(v => console.log(v))
+  .catch(err => console.error(err))
