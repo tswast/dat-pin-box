@@ -12,52 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var fs = require('fs')
-var path = require('path')
-var mirror = require('mirror-folder')
-var Dat = require('dat-node')
-var parse = require('parse-dat-url')
-
-var rootDir = process.argv[2]
-if (!rootDir) {
-  console.error('Run with: node index.js path/to/pins/root/')
-  process.exit(1)
+async function main() {
+  var pinsRepo = await DatArchive.load('dat://464b000900de29e2f02e1c304abb70de0a94266cae55a5ca94bf1abae78839b6/')
+  await pinsRepo.download('/')
+  var buf = await pinsRepo.readFile('/pins.json')
+  console.log(buf)
 }
-rootDir = path.resolve(rootDir)
-pinsRepo = path.resolve(rootDir, 'pins')
 
-Dat(pinsRepo, {key: process.env.DAT_PIN_ARCHIVE}, function (err, dat) {
-  if (err) throw err
-
-  dat.joinNetwork(function (err) {
-    if (err) throw err
-
-    // After the first round of network checks, the callback is called
-    // If no one is online, you can exit and let the user know.
-    if (!dat.network.connected || !dat.network.connecting) {
-      console.error('No users currently online for pin key.')
-      // process.exit(1)
-    }
-  })
-  console.log('Downloading: pin archive')
-})
-
-fs.readFile(path.resolve(pinsRepo, 'pins.json'), 'utf8', function (err, data) {
-  if (err) throw err;
-  var pins = JSON.parse(data);
-  pins['archives'].forEach(function (archive) {
-    var url = parse(archive['url'])
-    Dat(path.resolve(rootDir, archive['directory']), {key: url['host']}, function (err, dat) {
-      if (err) throw err
-
-      dat.joinNetwork(function (err) {
-        if (err) throw err
-        if (!dat.network.connected || !dat.network.connecting) {
-          console.error('No users currently online for ' + archive['directory'] + ' key.')
-          // process.exit(1)
-        }
-      })
-      console.log(`Downloading: ${archive['directory']}\n`)
-    })
-  })
-});
+main()
+  .then(v => console.log(v))
+  .catch(err => console.error(err))
