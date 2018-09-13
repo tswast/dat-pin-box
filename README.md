@@ -1,4 +1,4 @@
-# dat-pin-box
+# Pin Box
 
 Pin Dat repos by watching a Dat repo.
 

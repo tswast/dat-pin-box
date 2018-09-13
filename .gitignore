@@ -60,5 +60,8 @@ typings/
 # next.js build output
 .next
 
+# webrun cache
+.webrun
+
 # Dat archives output
 pins/
