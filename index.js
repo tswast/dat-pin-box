@@ -14,10 +14,11 @@
 
 async function main() {
   const url = new URL(import.meta.url)
-  const pinUrl = url.hash.substring(1)
+  const pinUrl = url.searchParams.get("pin")
 
   const pinsRepo = await DatArchive.load(pinUrl)
   await pinsRepo.download('/')
+  // TODO: readdir instead of readFile
   const buf = await pinsRepo.readFile('/pins.json')
   const pins = JSON.parse(buf)['archives']
 

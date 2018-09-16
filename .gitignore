@@ -62,6 +62,3 @@ typings/
 
 # webrun cache
 .webrun
-
-# Dat archives output
-pins/
